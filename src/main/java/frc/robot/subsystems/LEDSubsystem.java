@@ -3,10 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.LEDPattern.GradientType;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,14 +20,10 @@ public class LEDSubsystem extends SubsystemBase {
 
     private final AddressableLED m_led;
     private final AddressableLEDBuffer m_ledBuffer;
-    private final AddressableLEDBufferView m_ledBottom;
-    private final AddressableLEDBufferView m_ledMiddle;
-    private final AddressableLEDBufferView m_ledTop;
 
     private static final Random m_random = new Random();
 
-    private final Timer m_colorTimer = new Timer();
-    private final Timer m_twinkleTimer = new Timer();
+    private final LED[] leds = new LED[3];
 
     public LEDSubsystem() {
         m_led = new AddressableLED(kPort);
@@ -37,13 +31,12 @@ public class LEDSubsystem extends SubsystemBase {
 
         m_led.setLength(m_ledBuffer.getLength());
 
-        m_ledBottom = m_ledBuffer.createView(0,0);
-        m_ledMiddle = m_ledBuffer.createView(1,1);
-        m_ledTop = m_ledBuffer.createView(2,2);
+        for (var x = 0; x <= 2; x++)
+        {
+            leds[x] = new LED(m_ledBuffer.createView(x, x));
+        }
 
         m_led.start();
-
-        m_twinkleTimer.start();
     }
 
     @Override
@@ -51,31 +44,24 @@ public class LEDSubsystem extends SubsystemBase {
         if(DriverStation.isAutonomous()) {
             LEDPattern.gradient(GradientType.kDiscontinuous, Color.kRed, Color.kBlue).breathe(Seconds.of(2)).applyTo(m_ledBuffer);
         }
-        else if(DriverStation.isEnabled() && (m_colorTimer.hasElapsed(.75) || !m_colorTimer.isRunning()))
+        else if(DriverStation.isEnabled())
         {
-            for (AddressableLEDBufferView bufferView : new AddressableLEDBufferView[]{ m_ledTop, m_ledMiddle, m_ledBottom }) {
-                LEDPattern.solid(GetRandomColor()).atBrightness(getRandomBrightness()).applyTo(bufferView);                
-            }
+            for (LED led : leds) {
+                if(led.colorTimerHasElapsed()){
+                    led.setColorTimerDelay(m_random.nextDouble(.5, 3));
+                    LEDPattern.solid(GetRandomColor()).atBrightness(getRandomBrightness()).applyTo(led.getBufferView());
+                }
 
-            if(!m_colorTimer.isRunning())
-            {
-                m_colorTimer.start();
+                if(led.twinkleTimerHasElapsed()) {
+                    led.setTwinkleTimerDelay(m_random.nextDouble(.25, .75));
+                    LEDPattern.solid(led.getLedColor()).atBrightness(getRandomBrightness()).applyTo(led.getBufferView());
+                }
             }
-
-            m_colorTimer.reset();
-        }
-        else if(DriverStation.isEnabled() && m_twinkleTimer.hasElapsed(.1))
-        {
-            for (AddressableLEDBufferView bufferView : new AddressableLEDBufferView[]{ m_ledTop, m_ledMiddle, m_ledBottom }) {
-                LEDPattern.solid(bufferView.getLED(0)).atBrightness(getRandomBrightness()).applyTo(bufferView);                
-            }
-
-            m_twinkleTimer.reset();
         }
         else if(DriverStation.isDisabled()) {
-            LEDPattern.solid(Color.kRed).applyTo(m_ledTop);
-            LEDPattern.solid(Color.kYellow).applyTo(m_ledMiddle);
-            LEDPattern.solid(Color.kGreen).applyTo(m_ledBottom);
+            LEDPattern.solid(Color.kRed).applyTo(leds[2].getBufferView());
+            LEDPattern.solid(Color.kYellow).applyTo(leds[1].getBufferView());
+            LEDPattern.solid(Color.kGreen).applyTo(leds[0].getBufferView());
         }
 
         m_led.setData(m_ledBuffer);
@@ -91,6 +77,6 @@ public class LEDSubsystem extends SubsystemBase {
 
     private int getRandomRGB()
     {
-        return m_random.nextInt(10, 245);
+        return m_random.nextInt(0, 255);
     }
 }
