@@ -5,11 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Servo;
+//import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.TimeOfFlight;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -22,24 +23,26 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
 
   private LEDSubsystem m_ledSubsystem;
+  private TimeOfFlight m_timeOfFlight;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private final Servo m_servo = new Servo(4);
+  //private final Servo m_servo = new Servo(4);
 
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
-    setupLeds();
+    //setupLeds();
+    m_timeOfFlight = new TimeOfFlight();
 
-    System.out.println("servo on channel: " + m_servo.getChannel());
-    System.out.println("servo set: " + m_servo.get());
-    m_servo.set(0.25);
-    System.out.println("servo set: " + m_servo.get());
-    m_servo.set(0.5);
-    System.out.println("servo set: " + m_servo.get());
-    m_servo.set(0.75);
-    System.out.println("servo set: " + m_servo.get());
+    //System.out.println("servo on channel: " + m_servo.getChannel());
+    //System.out.println("servo set: " + m_servo.get());
+    //m_servo.set(0.25);
+    //System.out.println("servo set: " + m_servo.get());
+    //m_servo.set(0.5);
+    //System.out.println("servo set: " + m_servo.get());
+    //m_servo.set(0.75);
+    //System.out.println("servo set: " + m_servo.get());
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -59,13 +62,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    m_ledSubsystem.periodic();
+    //m_ledSubsystem.periodic();
+    m_timeOfFlight.periodic();
 
     if(DriverStation.isEnabled()) {
-      m_servo.setAngle(m_servo.getAngle() + 0.0000000001);
+      //m_servo.setAngle(m_servo.getAngle() + 0.0000000001);
     }
     else if (DriverStation.isDisabled()) {
-      m_servo.set(0.0);
+      //m_servo.set(0.0);
     }
   }
 
