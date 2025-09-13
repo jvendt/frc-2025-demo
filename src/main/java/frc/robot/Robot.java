@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,6 +23,7 @@ public class Robot extends TimedRobot {
 
   private LEDSubsystem m_ledSubsystem;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final Servo m_servo = new Servo(4);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -28,6 +31,15 @@ public class Robot extends TimedRobot {
    */
   public Robot() {
     setupLeds();
+
+    System.out.println("servo on channel: " + m_servo.getChannel());
+    System.out.println("servo set: " + m_servo.get());
+    m_servo.set(0.25);
+    System.out.println("servo set: " + m_servo.get());
+    m_servo.set(0.5);
+    System.out.println("servo set: " + m_servo.get());
+    m_servo.set(0.75);
+    System.out.println("servo set: " + m_servo.get());
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -48,6 +60,13 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_ledSubsystem.periodic();
+
+    if(DriverStation.isEnabled()) {
+      m_servo.setAngle(m_servo.getAngle() + 0.0000000001);
+    }
+    else if (DriverStation.isDisabled()) {
+      m_servo.set(0.0);
+    }
   }
 
   /**
